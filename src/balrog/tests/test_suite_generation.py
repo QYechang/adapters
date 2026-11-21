@@ -9,6 +9,7 @@ import unittest
 from unittest.mock import patch
 
 from balrog import adapter, suite
+from separate_verifier_support import assert_separate_verifier_contract
 
 PROJECT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location("suite_reference_checker", PROJECT / "scripts/check_suite_reference.py")
@@ -81,6 +82,8 @@ class SuiteGenerationTests(unittest.TestCase):
                 paths = adapter.BALROGAdapter(output, environments=["crafter", "nle"], split="sanity").run()
             self.assertEqual(len(paths), 2)
             for path in paths:
+                episode = checker.read_json(path / "environment/episode.json")
+                assert_separate_verifier_contract(self, path, episode)
                 status = checker.read_json(path / "solution/reference_status.json")
                 reference = checker.read_json(path / "solution/oracle_actions.json")
                 self.assertFalse(status["full_oracle_available"])

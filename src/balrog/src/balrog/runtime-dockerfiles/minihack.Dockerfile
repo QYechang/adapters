@@ -15,6 +15,7 @@ RUN mkdir /opt/balrog /opt/minihack && tar -xzf /tmp/vendor/balrog.tar.gz -C /op
     && rm -rf /tmp/vendor && python -m pip freeze > /opt/runtime-requirements.txt \
     && useradd --create-home --uid 1000 game
 WORKDIR /app
-COPY game_server.py episode.json /app/
+COPY game_server.py export_result.py episode.json /app/
+RUN mkdir -p /var/lib/balrog && chown game:game /var/lib/balrog
 USER game
 CMD ["python", "game_server.py", "--episode", "/app/episode.json"]

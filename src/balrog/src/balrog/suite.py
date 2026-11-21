@@ -167,7 +167,7 @@ def generate_suite(adapter):
                 config = config.replace('"babyai"', json.dumps(env_name)).replace('difficulty = "easy"', 'difficulty = "hard"')
                 config = config.replace("timeout_sec = 300.0", "timeout_sec = 1800.0")
                 config = config.replace("timeout_sec = 120.0", "timeout_sec = 1800.0")
-                config = config.replace('BALROG_SERVER = "http://game:8080"', 'BALROG_SERVER = "http://game:8080"\nBALROG_VERIFIER_TIMEOUT = "1700"')
+                config = config.replace("--request-timeout 100", "--request-timeout 1700")
                 config = config.replace("build_timeout_sec = 900.0", "build_timeout_sec = 1800.0")
                 config = config.replace("memory_mb = 1024", "memory_mb = 2048").replace("storage_mb = 2048", "storage_mb = 4096")
                 (staged / "task.toml").write_text(config, encoding="utf-8", newline="\n")
@@ -180,6 +180,7 @@ def generate_suite(adapter):
                 metadata[archive] = {"sha256": hashlib.sha256(archives[archive]).hexdigest()}
             _write_json(vendor / "manifest.json", {"balrog_commit": BALROG_COMMIT, "archives": metadata, "sources": source_lock.get(env_name, [])})
             _write_json(staged / "environment/episode.json", ep)
+            _write_json(staged / "tests/task_config.json", ep)
             reference = case.get("oracle") or case.get("reference")
             if reference is None and case.get("native_probe", {}).get("transitions_replay_equal") is True:
                 probe = case["native_probe"]

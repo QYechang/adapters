@@ -310,7 +310,7 @@ def rebuild(workspace):
                              "meaning": "Integrity cross-check only, not an external signature or gameplay reproduction."})
 
 
-def check():
+def check(*, historical=False):
     checksum = read(OUTPUT / "checksums.json")["sha256"]
     actual = {p.relative_to(OUTPUT).as_posix() for p in OUTPUT.rglob("*")
               if p.is_file() and p.name != "checksums.json"}
@@ -326,8 +326,15 @@ def check():
             require(re.search(pattern, text) is None, "Potential private path/credential in " + name)
     baseline = read(OUTPUT / "baseline.json")
     provenance = read(OUTPUT / "provenance.json")
+    review_drift = []
     for name, expected in provenance["review_snapshot_file_sha256"].items():
-        require(sha(PROJECT / name) == expected, "Current review file differs from bundle snapshot: " + name)
+        current = sha(PROJECT / name) if (PROJECT / name).is_file() else None
+        if current != expected:
+            review_drift.append({"file": name, "historical_sha256": expected, "current_sha256": current})
+    require(historical or not review_drift,
+            "Current review files differ from bundle snapshot. Use --check --historical only to audit "
+            "the archived evidence; it does not validate the changed runtime. Changed files: " +
+            ", ".join(row["file"] for row in review_drift))
     rows = baseline["cases"]
     require(len(rows) == baseline["completed"] == 255 and len({r["task_id"] for r in rows}) == 255,
             "Baseline task coverage mismatch")
@@ -412,6 +419,8 @@ def check():
             submission["docker_gameplay_rerun"] is False and submission["model_api_calls"] == 0,
             "Submission check counts or scope mismatch")
     print(json.dumps({"status": "passed", "kind": "saved_summary_integrity_not_gameplay_reproduction",
+                      "historical_mode": historical, "review_snapshot_matches_current": not review_drift,
+                      "review_snapshot_differences": review_drift,
                       "cases": len(rows), "full_oracles": 239, "diagnostics": 16,
                       "files": len(actual) + 1,
                       "bytes": sum(p.stat().st_size for p in OUTPUT.rglob("*") if p.is_file())}))
@@ -420,13 +429,17 @@ def check():
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true", help="Verify committed summaries without raw development artifacts")
+    parser.add_argument("--historical", action="store_true",
+                        help="Audit archived summaries while reporting source drift; does not validate the changed runtime")
     parser.add_argument("--workspace-root", type=Path, help="Rebuild from the original saved research workspace; no gameplay")
     args = parser.parse_args()
+    if args.historical and (not args.check or args.workspace_root is not None):
+        parser.error("--historical requires --check and cannot rebuild evidence")
     if args.workspace_root is not None:
         rebuild(args.workspace_root)
     elif not args.check:
         parser.error("Pass --check or --workspace-root")
-    check()
+    check(historical=args.historical)
 
 
 if __name__ == "__main__":

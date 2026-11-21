@@ -12,6 +12,7 @@ import unittest
 from unittest.mock import patch
 
 from balrog import adapter
+from separate_verifier_support import assert_separate_verifier_contract
 
 
 def tiny_archive() -> bytes:
@@ -82,7 +83,7 @@ class GeneratorTests(unittest.TestCase):
         for destination, case in zip(generated, adapter.select_cases("full", None, None)):
             config = tomllib.loads((destination / "task.toml").read_text(encoding="utf-8"))
             self.assertEqual(config["task"]["name"], "balrog/" + case["episode"]["task_id"])
-            tokens.add(config["verifier"]["env"]["RESULT_TOKEN"])
+            tokens.add(assert_separate_verifier_contract(self, destination, case["episode"]))
             for relative, expected in (("environment/episode.json", case["episode"]), ("solution/oracle_actions.json", case["oracle"])):
                 self.assertEqual(json.loads((destination / relative).read_text(encoding="utf-8")), expected)
             for name in ("balrog", "minigrid"):
@@ -107,11 +108,11 @@ class GeneratorTests(unittest.TestCase):
     def test_overwrite_only_changes_selected_task(self):
         with self.fake_sources():
             first = adapter.BALROGAdapter(self.output, split="sanity").run()
-            old_configs = {p.name: (p / "task.toml").read_bytes() for p in first}
+            old_configs = {p.name: (p / "environment/docker-compose.yaml").read_bytes() for p in first}
             updated = adapter.BALROGAdapter(self.output, task_ids=[adapter.TASK_ID], overwrite=True).run()
         self.assertEqual([p.name for p in updated], [adapter.TASK_ID])
         for p in first:
-            current = (p / "task.toml").read_bytes()
+            current = (p / "environment/docker-compose.yaml").read_bytes()
             if p.name == adapter.TASK_ID:
                 self.assertNotEqual(current, old_configs[p.name])
             else:

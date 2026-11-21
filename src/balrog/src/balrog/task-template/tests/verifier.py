@@ -1,4 +1,4 @@
-"""Read the protected native score; infrastructure failures produce no reward."""
+"""Grade a trusted game-side artifact in Harbor's separate verifier environment."""
 
 from __future__ import annotations
 
@@ -8,7 +8,6 @@ import math
 import os
 from pathlib import Path
 import sys
-from urllib.request import Request, urlopen
 
 
 def validate_result(result):
@@ -48,28 +47,42 @@ def validate_result(result):
     return float(score)
 
 
+def validate_task_identity(result, episode):
+    """Reject evidence for a different task, seed, budget or initial state."""
+    expected = {
+        "task_id": episode["task_id"],
+        "task": episode["task"],
+        "seed": episode["seed"],
+        "env_name": episode.get("env_name", "babyai"),
+        "max_steps": episode["expected_max_steps"],
+        "initial_observation_sha256": episode["expected_initial_observation_sha256"],
+    }
+    for key, value in expected.items():
+        if type(result.get(key)) is not type(value) or result[key] != value:
+            raise ValueError(f"Result {key} differs from frozen task configuration")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--server", default=os.environ.get("BALROG_SERVER", "http://game:8080"))
+    parser.add_argument("--result-path", type=Path, default=Path(os.environ.get("BALROG_RESULT_PATH", "/var/lib/balrog/result.json")))
+    parser.add_argument("--task-config", type=Path, default=Path("/tests/task_config.json"))
     parser.add_argument("--output-dir", type=Path, default=Path("/logs/verifier"))
-    parser.add_argument("--request-timeout", type=float, default=float(os.environ.get("BALROG_VERIFIER_TIMEOUT", "60")))
     args = parser.parse_args()
-    if not math.isfinite(args.request_timeout) or args.request_timeout <= 0:
-        parser.error("Verifier request timeout must be positive and finite")
     args.output_dir.mkdir(parents=True, exist_ok=True)
     reward_path = args.output_dir / "reward.txt"
     reward_path.unlink(missing_ok=True)
     # Harbor also recognizes reward.json; never leave an older/forged alternate
     # reward behind when the current trusted verification fails.
     (args.output_dir / "reward.json").unlink(missing_ok=True)
+    (args.output_dir / "result.json").unlink(missing_ok=True)
+    (args.output_dir / "error.json").unlink(missing_ok=True)
     try:
-        token = os.environ.get("RESULT_TOKEN")
-        if not token:
-            raise ValueError("RESULT_TOKEN is required by the verifier")
-        req = Request(args.server.rstrip("/") + "/result", headers={"Authorization": "Bearer " + token})
-        with urlopen(req, timeout=args.request_timeout) as response:
-            result = json.load(response)
+        # This path is collected exclusively from the protected game sidecar,
+        # never from an agent-authored score file or /logs/artifacts.
+        result = json.loads(args.result_path.read_text(encoding="utf-8"))
+        episode = json.loads(args.task_config.read_text(encoding="utf-8"))
         score = validate_result(result)
+        validate_task_identity(result, episode)
         (args.output_dir / "result.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
         reward_path.write_text(f"{score:.17g}\n", encoding="utf-8")
         print(f"BALROG {result.get('env_name', 'babyai')} progression={score:g}; replay_verified={result['replay_verified']}; steps={result['steps']}")

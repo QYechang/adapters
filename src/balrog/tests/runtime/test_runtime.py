@@ -50,10 +50,8 @@ class ManifestTest(unittest.TestCase):
 
 class RuntimeTest(unittest.TestCase):
     def setUp(self):
-        self.episode = Episode(
-            {"task": "BabyAI-MixedTrainLocal-v0/goto", "seed": 0},
-            CONFIG_PATH,
-        )
+        self.manifest = frozen_case()["episode"]
+        self.episode = Episode(self.manifest, CONFIG_PATH)
         self.server = build_server(self.episode, TOKEN, ("127.0.0.1", 0))
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
         self.thread.start()
@@ -76,12 +74,29 @@ class RuntimeTest(unittest.TestCase):
             return json.load(response)
 
     def verify(self, token=TOKEN):
-        output = Path(self.work.name) / "verifier"
-        completed = subprocess.run(
-            [sys.executable, str(TEMPLATE / "tests/verifier.py"),
-             "--server", self.url, "--output-dir", str(output)],
+        root = Path(self.work.name)
+        output = root / "verifier"
+        result_path = root / "trusted-game/result.json"
+        task_config = root / "task_config.json"
+        task_config.write_text(json.dumps(self.manifest), encoding="utf-8")
+        exported = subprocess.run(
+            [sys.executable, str(TEMPLATE / "environment/export_result.py"),
+             "--server", self.url, "--output", str(result_path)],
             env={**os.environ, "RESULT_TOKEN": token}, capture_output=True, text=True, timeout=30,
         )
+        # The grader always runs against the collected file, including a missing
+        # file after collect failure; it must remove any old reward in that case.
+        grader_env = {key: value for key, value in os.environ.items()
+                      if key not in {"RESULT_TOKEN", "BALROG_SERVER"}}
+        completed = subprocess.run(
+            [sys.executable, str(TEMPLATE / "tests/verifier.py"),
+             "--result-path", str(result_path), "--task-config", str(task_config),
+             "--output-dir", str(output)],
+            env=grader_env, capture_output=True, text=True, timeout=30,
+        )
+        if exported.returncode:
+            completed.stderr = exported.stderr + completed.stderr
+            self.assertNotEqual(completed.returncode, 0, "Failed collect must not reuse a score")
         return completed, output
 
     def test_oracle_real_environment_replay_and_privacy(self):

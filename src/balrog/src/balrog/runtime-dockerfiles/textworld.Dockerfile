@@ -17,6 +17,7 @@ RUN mkdir -p /opt/balrog /opt/textworld \
     && rm -rf /tmp/vendor && useradd --create-home --uid 1000 game
 # Run precompiled upstream games; do not regenerate a different dataset.
 WORKDIR /app
-COPY game_server.py episode.json /app/
+COPY game_server.py export_result.py episode.json /app/
+RUN mkdir -p /var/lib/balrog && chown game:game /var/lib/balrog
 USER game
 CMD ["python", "game_server.py", "--episode", "/app/episode.json"]

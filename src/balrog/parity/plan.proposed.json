@@ -1,17 +1,18 @@
 {
   "status": "PROPOSED_NOT_APPROVED_NOT_RUN",
-  "prepared_on": "2026-11-16",
-  "purpose": "Proposed text-only parity across all six BALROG environments in one adapter PR; no paid runs authorized or executed.",
+  "prepared_on": "2026-11-21",
+  "purpose": "Proposed matched text-only evaluation of the pinned upstream BALROG naive agent on 255 fixed cases across all six environments. No real-model parity has run; this document is not permission to spend.",
   "coordination": {
     "contact": "Xiangning Lin (@rosierosie_77359), Discord",
     "claim": "Claimed by contributor; parity plan not yet confirmed",
-    "request_now": "Obtain 2077ai and Daytona credentials and confirm this six-environment plan before real-model experiments.",
+    "request_now": "Request maintainer decisions on scope, oracle/scoring exceptions, platform, exact model, staged quotas and standard CLI-agent coverage; request credentials through a private channel. No credential or quota provision is claimed.",
     "before_paid_runs": [
-      "Maintainer confirms exact agent, model snapshot, all six task manifests, repetition counts and budget.",
-      "Team supplies credentials and quota; verify provider endpoint and model availability.",
-      "Resolve or explicitly agree treatment of missing full-score references for Crafter/NLE and the pinned NLE scoring defect.",
-      "Validate authoritative game service, protected verifier and identical native/Harbor execution on Daytona.",
-      "Run paired sanity within approved budget; freeze any timeout/platform changes before formal repeats."
+      "Written agreement on this exact scope, model snapshot, agent revisions, native settings and staged cost/token/runtime limits.",
+      "Resolve or explicitly accept the remaining NLE/MiniHack reference limitations, the Crafter privileged-reference proposal and the existing Crafter replay/scoring exception before claiming the oracle gate is met.",
+      "Provision 2077ai and Daytona credentials privately; confirm exact dated model availability, account permissions and request/token quotas. Provisioning is not spending authorization.",
+      "Finish explicit sanity task-ID selection and validate launchers against the chosen Harbor revision; freeze adapter/runtime/image/settings/manifests and test both sides without paid calls.",
+      "Validate the original game sidecar, collect hook and separate verifier on the approved platform; current evidence is local Docker, not Daytona.",
+      "Approve paired sanity spending first. Estimate subsequent usage from retained sanity accounting and approve each scale-up before launching it."
     ],
     "delivery_scope": "All six environments together in one adapter PR, as confirmed by the contributor."
   },
@@ -384,14 +385,27 @@
     },
     "modality": "text only",
     "episodes_per_full_run": 255,
-    "sanity_episodes_per_side": 58,
+    "sanity_episodes_per_side": 10,
     "selection": "Every configured task type at predetermined seeds; identical cases on both sides; never filter by oracle or model success.",
-    "sanity": "Seed 0 for each of 58 task types on each side, excluded from formal statistics.",
+    "sanity": "Ten predetermined seed-0 cases span all six environments and several interaction families. Selection is based on coverage, not observed success. Sanity executions are excluded from formal statistics.",
     "excluded": [
       "Image/VLM evaluation",
       "Seeds outside the frozen manifests"
     ],
-    "manifest_policy": "Re-freeze and re-confirm manifest hashes after implementation changes and before paid runs."
+    "manifest_policy": "Hashes below bind the current original 255-case scope. Any approved source, scorer, native-budget or scope change requires new manifests, validation and a revised approved experiment; do not silently exclude the six unresolved NLE/MiniHack cases or promote private Crafter references.",
+    "sanity_task_ids": [
+      "babyai-goto-seed-0",
+      "babyai-putnext-seed-0",
+      "babaisai-make-win-seed-0",
+      "babaisai-two-room-make-you-make-win-seed-0",
+      "textworld-treasure-hunter-seed-0",
+      "textworld-the-cooking-game-seed-0",
+      "crafter-default-seed-0",
+      "nle-nethackchallenge-v0-seed-0",
+      "minihack-mazewalk-9x9-v0-seed-0",
+      "minihack-quest-easy-v0-seed-0"
+    ],
+    "sanity_previous_split": "The existing --split sanity selects all 58 seed-0 task types. It is not the proposed initial paid stage; keep it available for offline checks. Explicit selection support is required before the ten-task stage."
   },
   "primary_experiment": {
     "original_agent": "upstream BALROG naive",
@@ -440,46 +454,76 @@
       "Preserve raw trajectories, request metadata, usage, returned model IDs and configuration hashes; redact secrets"
     ],
     "nle_native_no_progress_timeout": 150,
-    "outer_timeout_policy": "Initial infrastructure deadline on both sides, not a new native task limit. Timeout is an infrastructure failure, never a scored zero or accepted incomplete run. Longer settings, particularly NLE/Crafter, may be agreed after sanity and must match both sides for formal runs."
+    "outer_timeout_policy": "Initial infrastructure deadline on both sides, not a new native task limit. Timeout is an infrastructure failure, never a scored zero or accepted incomplete run. Longer settings, particularly NLE/Crafter, may be agreed after sanity and must match both sides for formal runs.",
+    "settings_file_sha256": "36bb815fab38937f98dae4b1608216d747bdc275a4b3cfb8a4ba41e50a517b27",
+    "harbor_revision_policy": "0.26.0 is the version used for completed local separate-verifier reference validation. Recheck upstream before paid runs, agree and freeze the actual release/commit, and repeat preflight after a version change.",
+    "adapter_revision_policy": "Freeze the reviewed PR commit plus generated task, runner and image digests before each experiment revision; the current proposal does not certify an uncommitted checkout as a final execution pin.",
+    "implementation_status": {
+      "native": "Implemented via the original Evaluator.run_episode with transparent recorders.",
+      "harbor": "Implemented as balrog.agent:BalrogNativeAgent using the same pinned upstream naive agent through public HTTP observations/actions.",
+      "real_model_validation": "Not run; offline fake-client and reference validation are separate evidence.",
+      "preflight_gaps": [
+        "Both public launchers currently select the entire seed-0 sanity split; add audited explicit task-ID selection without changing fixtures or task budgets.",
+        "Validate/update scripts/run_harbor.py for the agreed Harbor JobConfig, including top-level n_concurrent_trials instead of relying on the old orchestrator object.",
+        "Record and compare actual prompts, effective settings, launch configuration and request behavior on both sides before scaling."
+      ]
+    },
+    "nle_native_no_progress_timeout_meaning": "150 native calls without a game-clock advance; not 150 elapsed game turns and not a reward-progress timeout."
   },
   "execution": {
-    "formal_platform_proposed": "Daytona on both sides, after validating the same pinned environment assets and isolation.",
+    "formal_platform_proposed": "Daytona on both sides, as requested by the team, after validating identical pinned assets, game-sidecar isolation, collection and separate verification.",
     "current_platform": "Local Linux Docker containers with Docker Compose; Daytona not yet validated.",
-    "preflight": "Reproduce game-service/verifier isolation on Daytona; validate all frozen references and no-op controls. Partial reference scores are explicitly not full oracles.",
-    "fallback": "Ask for Docker approval or agree a tested alternative if the sidecar topology cannot be supported. Do not mix platforms in a comparison; repeat paired sanity and formal runs after a material platform change.",
+    "preflight": "Verify all 255 original references and representative wrong-action controls on the selected platform; preserve partial scores and secure artifact transfer. The existing 239 full-score plus 16 diagnostic baseline does not by itself satisfy the guide's 100% oracle gate.",
+    "fallback": "If the required sidecar/collect/separate-verifier topology cannot be supported on Daytona, document the blocker and obtain maintainer approval for an alternative. Local Docker evidence is not Daytona validation; do not mix platforms within a comparison.",
     "initial_concurrency": 1,
     "stages": [
       {
-        "name": "sanity",
-        "episodes_per_side": 58,
+        "name": "paired_sanity",
+        "episodes_per_side": 10,
         "sides": 2,
-        "total": 116,
-        "formal": false
+        "total": 20,
+        "formal": false,
+        "approval_gate": "Approve exact selection and a finite sanity cost/token/runtime cap first."
       },
       {
-        "name": "formal_repeats",
-        "runs_per_side": 3,
+        "name": "first_full_pair",
+        "runs_per_side": 1,
         "episodes_per_run_per_side": 255,
         "sides": 2,
-        "total": 1530,
-        "formal": true
+        "total": 510,
+        "formal": true,
+        "approval_gate": "Both sanity sides complete, errors diagnosed, settings frozen and first full-pair budget approved."
+      },
+      {
+        "name": "two_additional_full_pairs",
+        "additional_runs_per_side": 2,
+        "episodes_per_run_per_side": 255,
+        "sides": 2,
+        "total": 1020,
+        "formal": true,
+        "approval_gate": "One complete full run on each side reviewed before scaling. Execute paired repeats 2 and 3; never finish three on one side first."
       }
     ],
     "full_runs_per_side_total": 3,
     "formal_episodes_total": 1530,
-    "sanity_episodes_total": 116,
-    "primary_episodes_total": 1646,
+    "sanity_episodes_total": 20,
+    "primary_episodes_total": 1550,
     "stopping_rules": [
       "Validate requests, usage, resets and scoring on both sides before scaling beyond sanity",
       "Pause on API/quota/simulator/verifier/transport errors; retain them as infrastructure failures, not score zero",
       "Investigate systematic divergence; if both full runs are all zero, report weak/no discriminating evidence and agree a stronger-model diagnostic rather than declaring parity from range overlap alone",
       "Do not select tasks or add runs until overlap appears; obtain agreement for changes and preserve all attempts",
       "After evaluation fixes, freeze corrected inputs and restart the affected paired comparison; never pool incompatible runs"
-    ]
+    ],
+    "automatic_job_retries": 0,
+    "retry_policy": "Preserve every API retry, failed attempt and original artifact. Genuine agent failures remain native scores. Infrastructure failures invalidate completion, never become synthetic zeros; replacements require a recorded cause and an agreed retry allowance, not selection of the better outcome."
   },
   "supplementary_standard_agent": {
-    "status": "REQUIRED_BY_SCENARIO_3_NOT_IMPLEMENTED_OR_RUN",
-    "note": "The adapter guide requires an additional standard-agent evaluation for custom-agent adapters. Its agent, model, task scope, implementation and budget remain to be agreed; it is not included in the 1646 primary proposed episodes and does not replace original BALROG-agent parity."
+    "status": "REQUIRED_BY_SCENARIO_3_NOT_CONFIGURED_OR_RUN",
+    "requirement_source": "docs/adapters.mdx, Step 4, Scenario 3",
+    "proposal": "Use one existing Harbor standard CLI agent (Codex or Claude-Code) with a team-selected pinned version/model to exercise the public balrog-task interface. Select task coverage, repetition count and budget separately with maintainers.",
+    "implementation_boundary": "Harbor supplies these standard agents; no new CLI-agent implementation is claimed. This adapter has no validated pinned CLI-agent experiment/config/results yet. Confirm whether the existing generated task instructions suffice or a separate compatibility dataset is required.",
+    "primary_comparison": "This is supplementary generalization evidence and does not replace matched upstream naive-agent parity. Its counts and costs are not included in the 1550 primary proposed episodes."
   },
   "statistics": {
     "metric": "Native task progression, scale 0-1",
@@ -497,16 +541,27 @@
       "crafter": 0.16666666666666666,
       "nle": 0.16666666666666666,
       "minihack": 0.16666666666666666
-    }
+    },
+    "after_first_pair": "Report the two single-run scores and per-case diagnostics without SEM; sample SEM is undefined with one run per side.",
+    "range_overlap_scope": "Check and publish raw run-score ranges for each environment and the equal-weight aggregate; aggregate overlap must not hide a systematic environment-level mismatch."
   },
   "resources": {
-    "primary_episodes": 1646,
+    "primary_episodes": 1550,
     "formal_episodes": 1530,
-    "sanity_episodes": 116,
-    "primary_logical_action_call_ceiling_excluding_retries": 3476224,
-    "ceiling_note": "Theoretical native action-budget ceiling, not a forecast or permission to spend. Native termination often stops much earlier. NLE dominates the upper bound.",
-    "budget": "No dollar estimate until provider pricing/quota and paired sanity usage are available. Confirm an explicit token/cost budget including retries and Daytona runtime before scaling; stop on exhaustion, do not score incomplete work.",
-    "credentials": "Ignored environment configuration or agreed secret store only; never proposal/settings files or published artifacts."
+    "sanity_episodes": 20,
+    "sanity_native_action_budget_per_side": 102752,
+    "full_native_action_budget_per_side": 543520,
+    "primary_logical_action_call_ceiling_excluding_retries": 3466624,
+    "ceiling_note": "Sum of unchanged native action budgets across proposed executions, assuming the naive agent's one completion per action. This is not expected usage, a provider-request ceiling including retries, or spending authorization. NLE dominates; retain its original budget unless a revised experiment is approved.",
+    "approved_cost_limit_usd": null,
+    "approved_token_limit": null,
+    "approved_runtime_limit": null,
+    "provider_requests_per_minute": null,
+    "provider_tokens_per_minute": null,
+    "provider_account_quota": null,
+    "stage_limits": "Pending maintainer approval, separately for sanity, first full pair, two additional pairs, and the supplementary CLI agent. Initial concurrency is 1; increase only with explicit quota/concurrency agreement.",
+    "budget": "No price or dollar forecast is assumed. Confirm current provider billing and quota, measure sanity usage including retries, then estimate and approve each later stage. Stop before the approved cap; an interrupted run is not a complete formal result.",
+    "credentials": "Request 2077ai inference and Daytona access through an agreed private secret channel. Store credentials in ignored environment files or a secret store, never in this proposal, PR comments, logs or artifacts."
   },
   "deliverables": [
     "README with exact scope, pins, commands and mean +/- sample SEM",
@@ -518,15 +573,49 @@
   "existing_evidence": {
     "real_model_runs": 0,
     "parity_experiment_json": "[]",
-    "reference_validation": "See README and local validation reports; oracle/reference results are not model parity.",
-    "offline_integration": "Scripted fake HTTP/API tests only; excluded from formal analysis."
+    "reference_validation": "Harbor 0.26.0 separate-verifier run completed all 255 original references: 239 full-score oracles, 16 diagnostics, zero exceptions, 255 exact fresh replays, original scores unchanged. See docs/separate_verifier_full_validation.md; not model parity.",
+    "offline_integration": "Scripted fake HTTP/API tests only; excluded from formal analysis.",
+    "crafter_v45": "Separately evaluated privileged reference-controller proposal; see docs/crafter_v45_validation.md. Maintainer acceptance and promotion remain pending. It does not change this plan's original manifest hashes, baseline oracle counts or model inputs; native object-order replay limitations still apply.",
+    "model_runs_authorized": false
   },
   "references": [
-    "https://www.harbor-index.org/contribute",
-    "https://www.harbor-index.org/tutorial/agent-guide",
+    "../docs/separate_verifier_full_validation.md",
+    "../docs/crafter_v45_validation.md",
+    "../docs/crafter_scoring_review.md",
+    "../docs/nle_scoring_review.md",
+    "../docs/minihack_seed_and_budget_review.md",
+    "https://github.com/harbor-framework/adapters/blob/main/docs/adapters.mdx",
     "https://github.com/balrog-ai/BALROG/tree/b7afe79e3e4265811cfa985ed7c95c4d1a11e3f5",
-    "https://www.ppapi.ai/blogs/quick-start",
-    "https://developers.openai.com/api/docs/models/gpt-4o-mini",
-    "https://developers.openai.com/api/docs/deprecations"
+    "https://www.ppapi.ai/blogs/quick-start"
+  ],
+  "maintainer_decisions": [
+    {
+      "id": "scope_and_agent",
+      "question": "Approve all 255 original fixed cases and matched upstream naive/balrog-native primary agents, with ten-task paired sanity then 1 then 3 full runs per side?"
+    },
+    {
+      "id": "nle",
+      "question": "Accept explicitly partial references under the original scorer, whose reachable-key ceiling is 0.8067964442444019, or require a separately proposed native ascension-event scorer correction pinned identically on both sides? No correction or normalization is applied."
+    },
+    {
+      "id": "minihack",
+      "question": "Keep the original 100-action scope with its documented unsolved case, or approve a new upstream-compatible 200-action Boxoban revision on both sides? The separate 40/40 proposal is not current baseline evidence."
+    },
+    {
+      "id": "crafter_oracle_and_scoring",
+      "question": "Accept the V45 privileged read-only reference-controller approach as oracle evidence, and separately approve the explicit trusted-native-state grading fallback for upstream object-order replay nondeterminism? Neither gives model agents private state, and neither is yet accepted."
+    },
+    {
+      "id": "model_and_secrets",
+      "question": "Is gpt-4o-mini-2024-07-18 available through 2077ai at https://app.ppapi.ai/v1 with the proposed settings? If not, agree an exact dated replacement before changing settings. Which private credential-provisioning channel and account quotas should be used?"
+    },
+    {
+      "id": "platform_and_limits",
+      "question": "Confirm Daytona provisioning and the required sidecar/collect/separate-verifier topology, plus finite per-stage cost/token/runtime caps, request/token rate quotas, concurrency and retry allowances before any paid request. Approve any alternative platform separately if a demonstrated blocker arises."
+    },
+    {
+      "id": "standard_cli",
+      "question": "Which pinned standard CLI agent/model, task scope, repeats and separate budget satisfy Scenario 3, and is a separate compatibility dataset needed?"
+    }
   ]
 }

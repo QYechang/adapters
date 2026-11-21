@@ -277,6 +277,7 @@ class BALROGAdapter:
                         path.write_text(content, encoding="utf-8", newline="\n")
                 (staged / "environment" / "vendor").mkdir(parents=True, exist_ok=True)
                 _write_json(staged / "environment" / "episode.json", episode)
+                _write_json(staged / "tests" / "task_config.json", episode)
                 _write_json(staged / "solution" / "oracle_actions.json", oracle)
                 for name, archive in archives.items():
                     (staged / "environment" / "vendor" / f"{name}.tar.gz").write_bytes(archive)

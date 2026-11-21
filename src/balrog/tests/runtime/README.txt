@@ -43,6 +43,9 @@ Coverage:
 - Frozen mission/initial-observation/budget validation and replay integrity.
 - Oracle score 1, valid unfinished/failed score 0, infrastructure errors without
   a reward file, token protection, stale actions and long invalid model output.
+  Runtime verification now collects through environment/export_result.py and
+  grades that trusted file offline with the frozen task_config.json. The grader
+  receives neither the game token nor a live server URL.
 - Actual upstream Evaluator.run_episode versus HTTP transport: every prompt,
   converted OpenAI request, parsed action and observation hash must agree for a
   successful oracle trajectory and a 64-step long-invalid-output trajectory.
@@ -57,6 +60,15 @@ Coverage:
 
 Temporary artifacts are created in this test directory and removed by the tests.
 The tests use the committed fixtures/manifest.json; no research directory is read.
+
+Host-only collection/grading contracts (Python 3.12, no game dependencies):
+  python3.12 -m unittest discover -s tests -p test_separate_verifier.py
+These tests use a localhost fake HTTP service for collection and subprocesses
+for offline grading. They check authenticated collection, missing/corrupt
+artifacts, task identity, stale-output removal, and preserved fractional scores.
+They do not establish a real separate-container Harbor pass or cryptographic
+freshness of a same-task historical result; artifact trust comes from Harbor's
+game-service-only collection. Allow loopback sockets in the test environment.
 
 Additional six-environment checks:
   test_suite_verification.py validates fractional scores and the explicit Crafter
