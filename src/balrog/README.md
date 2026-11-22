@@ -89,19 +89,19 @@ harbor run -p datasets/balrog-babyai/babyai-goto-seed-0 -a nop --ek auto_mountin
 
 Use fresh job names for every attempt. `check_suite_reference.py` checks exact task coverage, job/trial completion and identity, exceptions, reward validity, agreement between Harbor rewards, reward files and native progression, and independent replay. If frozen native transitions are present, their entire sequence must match. Diagnostics without those transitions are explicitly labeled as server replay plus native final-score checks. Fractional scores remain fractional; partial references are not counted as full oracles. For cross-host audits of Harbor 0.26 job timestamps, use `--naive-utc-offset=-08:00` with the original job host's actual offset when its timestamps lack a timezone.
 
-Historical local reference validation, using the shared verifier before migration:
+Latest reference status, with the canonical run and additional experiments distinguished:
 
-| Environment | Native/reference evidence | Complete Harbor reference evidence |
-|-------------|---------------------------|------------------------------------|
-| BabyAI | 50/50 expert trajectories; fresh replay matched | 50/50 reward 1, zero exceptions; all 411 native transitions matched |
-| Baba Is AI | 120/120 search oracles; two fresh Linux native replays per case matched | 120/120 reward 1, zero exceptions; all 1,522 transitions passed strict full-scope checks |
-| TextWorld | 30/30 validated native walkthroughs | 30/30 reward 1, zero exceptions; strict full-scope reference checks passed |
-| Crafter | All 10 diagnostic traces score `2/22` | 10/10 completed at `2/22`; zero full-score oracles |
-| NetHack / NLE | Five fixed diagnostic cases; no full-score oracle | 5/5 completed, zero exceptions; seed 1 scores `0.0153922691`, the other four score 0 |
-| MiniHack | 39 full oracles; Hard Boxoban seed 0 is a 100-action diagnostic | Corrected 40/40 cases completed, zero exceptions; 39 reward 1, one reward 0; mean `0.975` |
-| Model parity | Not run | Not run |
+| Environment | Canonical separate-verifier references | Additional evidence / remaining requirement |
+|-------------|----------------------------------------|---------------------------------------------|
+| BabyAI | **50/50** reward 1 | Expert trajectories and fresh replay verified |
+| Baba Is AI | **120/120** reward 1 | Search trajectories and fresh replay verified |
+| TextWorld | **30/30** reward 1 | Native walkthroughs and fresh replay verified |
+| MiniHack | **39/40** reward 1 | One upstream 100-action case needs 104 moves; separate 200-action proposal passes 40/40 |
+| Crafter | Ten original diagnostics at `2/22` | **V45: 40/40 native games and 10/10 Harbor games at full score**, plus ten matching saved-result regrades; privileged oracle/fallback acceptance and integration pending |
+| NetHack / NLE | Five partial/zero-score diagnostics | AutoAscend v2: five exact native replays, no ascension; scoring limitation and winning-policy gap remain |
+| Model parity | Not run | Proposed matched experiment and separate standard-agent evaluation below |
 
-Across those historical per-environment reference jobs, **255/255 tasks completed with zero infrastructure errors: 239 full-score oracles and 16 diagnostic references**. The diagnostics are ten Crafter, five NetHack and one MiniHack task. These counts do not represent model accuracy, completed parity or validation of the new separate verifier.
+The archived pre-migration evidence remains in [validation/](validation/README.md). Those jobs used the shared verifier and also recorded 239 full-score references plus 16 diagnostics; they are historical evidence, not additional trials of the migrated implementation.
 
 Full post-migration Docker validation on Harbor **0.26.0** completed **255/255 tasks with zero exceptions and zero retries**: 239 full-score oracles and 16 diagnostic references. Every trial used a separate verifier and successfully collected its protected result from the game service. All 255 fresh replays passed, all scores matched the frozen references, and the task/source snapshots were unchanged. The existing Crafter fallback was not needed in this run. See the [full validation report](docs/separate_verifier_full_validation.md) and [255-task evidence summary](docs/separate_verifier_full_validation.json). These new results are recorded separately from the historical baseline above and do not constitute model parity or complete full-score oracle coverage.
 
@@ -113,6 +113,8 @@ Additional research evidence is recorded separately from that canonical run:
 - **NLE AutoAscend v2:** the wield-confirmation fix allowed all five seeds to continue without controller errors under a 10,000-action research cap. All 49,451 accepted actions matched fresh native-process replays; no run descended below depth 1 or ascended. Mean native progression was 0.0337761488; seed 4 starved. No v2 Harbor replay was performed, and the scoring patch remains unapplied. See the [bounded validation report](docs/nle_autoascend_v2_validation.md).
 
 A separate, unapproved MiniHack budget proposal also completed a real Harbor run: **40/40 reward 1**, with all 1,531 native transitions and independent replays checked. It changes the ten Boxoban budgets to 200 while retaining 100 for the other 30 cases. The original fixtures remain unchanged, so this adds **zero** oracles to the 239 above. Adoption requires an agreed upstream correction and matching settings on both parity sides; see [`docs/minihack_seed_and_budget_review.md`](docs/minihack_seed_and_budget_review.md).
+
+The original MiniHack gap is an **upstream-budget constraint, not an adapter-induced failure**. For `minihack-boxoban-hard-v0-seed-0`, independent A* and exhaustive single-action BFS both establish a 104-move minimum under the validated legal movement rules; BFS exhausts 796,766 states reachable within 100 moves without a goal. The unmodified native game and Harbor both truncate at the original 100-action limit with progression 0. [BALROG PR #70](https://github.com/balrog-ai/BALROG/pull/70) proposes the budget remedy; it is not merged or applied here.
 
 A separate Crafter reference prototype attained native and Harbor reward 1 on seed 6 in 725 actions. It uses a custom trusted-host controller with private read-only state, and fresh replay still diverges. This is one research success, not the standard oracle workflow or reliable ten-seed coverage; it also adds zero to the baseline count. See [`docs/crafter_scoring_review.md`](docs/crafter_scoring_review.md).
 
@@ -185,7 +187,9 @@ Replace `HARBOR_PYTHON` with that interpreter's executable path. The script chec
 |-------|-------|--------|------|--------------|-----------------------|---------------------|
 | Not run | Not confirmed | Native progression; equal environment weights overall | 0 | 0 | N/A | N/A |
 
-The six-environment [parity proposal](parity/proposal.md) and [machine-readable plan](parity/plan.proposed.json) remain **PROPOSED_NOT_APPROVED_NOT_RUN**. The primary comparison uses upstream `naive` on both sides with proposed model `gpt-4o-mini-2024-07-18` through 2077ai; that model's provider availability is unconfirmed. It proposes 10 fixed sanity tasks spanning all six environments, one complete run on each side, then two additional paired runs: `255 × 3 × 2 = 1,530` formal episodes plus `10 × 2 = 20` sanity episodes, totaling **1,550**. Task seeds are episodes within a run, not independent full benchmark runs. Exact settings, credentials, cost limits and the run plan still require confirmation. Daytona and its service isolation have not been validated; the tested platform is Docker Compose. The proposal records launcher and preflight work required before paid execution. The additional standard CLI-agent evaluation required by the guide's custom-agent scenario is pending configuration and execution; its agent, model and scope are outside the primary 1,550 episodes.
+The six-environment [parity proposal](parity/proposal.md) and [machine-readable plan](parity/plan.proposed.json) remain **PROPOSED_NOT_APPROVED_NOT_RUN**. The primary comparison uses upstream `naive` on both sides with proposed model `gpt-4o-mini-2024-07-18` through 2077ai; that model's provider availability is unconfirmed. It proposes 10 fixed sanity tasks spanning all six environments, one complete run on each side, then two additional paired runs: `255 × 3 × 2 = 1,530` formal episodes plus `10 × 2 = 20` sanity episodes, totaling **1,550**. Task seeds are episodes within a run, not independent full benchmark runs. Exact settings, credentials, cost limits and the run plan still require confirmation. Daytona and its service isolation have not been validated; the tested platform is Docker Compose. The proposal records launcher and preflight work required before paid execution. The current 1,800-second launcher default is not an approved formal deadline, particularly for NLE's unchanged 100,000-action allowance; per-environment deadlines must be agreed from measured latency before formal runs.
+
+For the additional standard-agent requirement, propose **Claude Code 2.1.322 + `claude-haiku-4-5-20251001`**: ten smoke tasks followed by all 58 seed-0 task families over three Harbor-only runs (**184 additional episodes**). This is separately reported subset generalization, not another matched parity experiment. The official release/model references and selection are in the proposal; 2077ai availability, Anthropic Messages/tool-use compatibility, effective CLI settings and budget remain unconfirmed. No standard-agent experiment has run. The two proposals total 1,734 scheduled episodes if both are approved, excluding retained failures or extra diagnostics.
 
 The shared public settings template is [`parity/settings.example.json`](parity/settings.example.json). Its exact model ID is a deliberate placeholder. The proposed settings are not approval to run them. Before live experiments, freeze the same supported agent, model ID, decoding parameters, provider endpoint and history settings on both sides. Set model-call limits per environment so they do not truncate native budgets; the original 128-call BabyAI example is insufficient for Crafter or NetHack. Provider credentials belong in the process environment or ignored `.env.local`, never public settings or artifacts.
 
@@ -200,7 +204,7 @@ uv run --project src/balrog python src/balrog/scripts/run_harbor.py --environmen
 
 Retain complete job directories, including original submissions/action records, model and agent logs, trusted game result artifacts, grading results and artifact manifests, together with the generated tasks and source/runtime provenance. For future parity uploads, include these in the Hugging Face experiment fork after removing credentials. The separate verifier can regrade collected game evidence without rerunning the agent; old logs alone do not establish that the required evidence is available. See [artifact retention and regrading](docs/separate_verifier.md#artifact-retention-and-regrading).
 
-For each environment, analyze at least two complete paired runs with its corresponding manifest. This BabyAI example uses three pairs:
+For each environment, analyze the three planned complete paired runs with its corresponding manifest. This BabyAI example uses three pairs:
 
 ```bash
 uv run --project src/balrog python src/balrog/scripts/analyze_parity.py --manifest src/balrog/src/balrog/fixtures/manifest.json --split parity --pair parity-runs/babyai/native-1 parity-runs/babyai/harbor/full-1 --pair parity-runs/babyai/native-2 parity-runs/babyai/harbor/full-2 --pair parity-runs/babyai/native-3 parity-runs/babyai/harbor/full-3 --output parity-runs/babyai/analysis.json

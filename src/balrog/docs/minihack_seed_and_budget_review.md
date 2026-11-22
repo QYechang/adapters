@@ -4,6 +4,18 @@ The fixed scope remains the eight native configured task types and seeds 0..4
 for every task. No task or seed was replaced to obtain a successful oracle.
 The native maximum episode length remains 100 actions.
 
+**Reason for the remaining 39/40 result:** `minihack-boxoban-hard-v0-seed-0`
+cannot be solved within that upstream budget. Independent push-level A* and
+single-action breadth-first search both give a shortest solution of **104
+legal cardinal moves** for the correctly seeded board and the movement rules
+validated below. The unmodified native game truncates at action **100**, at
+progression 0. This is an upstream episode-budget constraint, not a failure
+introduced by the Harbor adapter. It does not describe the other 39 instances.
+
+The proposed remedy is already filed as [BALROG PR #70](https://github.com/balrog-ai/BALROG/pull/70).
+It remains an unmerged Draft proposal as of 2026-11-21. The separate 200-action
+experiment passes all 40 cases; it has not changed the canonical benchmark.
+
 This WIP review links committed [baseline results](../validation/baseline.json)
 and a separately labeled [budget-proposal summary](../validation/proposals/minihack_200.json).
 They summarize saved local audits; full research jobs, solver programs and
@@ -195,8 +207,10 @@ and do not by themselves establish Ready for Review status.
 
 ## Requested maintainer decision
 
-Should the original 100-action instance remain as a documented unsolved-budget
-exception, or should we propose an upstream 200-action allowance for the two
-Boxoban families and apply it symmetrically to both parity sides? The latter
+For parity against the current published pin, we propose retaining the original
+100-action instance as a documented upstream-budget exception, subject to
+maintainer acceptance. Alternatively, should the existing upstream proposal
+for a 200-action allowance for the two Boxoban families be adopted
+symmetrically on both parity sides? The latter
 requires an agreed source change, regenerated manifests and fresh validation;
 the separate 40/40 proposal does not make the current baseline 40/40.
