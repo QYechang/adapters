@@ -69,7 +69,7 @@ balrog-six-games/
 └── ... 252 other fixed episodes
 ```
 
-Each environment receives its own game Dockerfile and required archives. TextWorld also receives `requirements-game.lock`. All generated tasks set `[verifier] environment_mode = "separate"` and bundle their grading code in `tests/Dockerfile`. Generation creates a fresh game-result token for each task, provided only to the game service; frozen episodes, IDs and source archives remain stable. This local token is unrelated to model-provider credentials. The legacy BabyAI-only generation path omits `reference_status.json` because its 50 references are all complete oracles. See [separate verification and artifact retention](docs/separate_verifier.md) for the transfer contract and regrading requirements.
+Each environment receives its own game Dockerfile, source archives, hash-checked `requirements-game.lock`, exact `apt-game.lock`, `runtime-lock.json` and `runtime_guard.py`. The guard checks source archives, the full installed package inventory and the Python/Linux target. All generated tasks set `[verifier] environment_mode = "separate"` and bundle their grading code in `tests/Dockerfile`. Generation creates a fresh game-result token for each task, provided only to the game service; frozen episodes, IDs and source archives remain stable. This local token is unrelated to model-provider credentials. The legacy BabyAI-only generation path omits `reference_status.json` because its 50 references are all complete oracles. See [separate verification and artifact retention](docs/separate_verifier.md) for the transfer contract and regrading requirements.
 
 ## Run Evaluation / Harness
 
@@ -133,14 +133,16 @@ An independent reset-order audit passed all 210 fixed cases in BabyAI, Baba Is A
 Offline generator, artifact and statistics tests use fixtures and synthetic artifacts:
 
 ```bash
-uv run --project src/balrog python -m unittest discover -s src/balrog/tests -v
+PYTHONPATH=src/balrog/src HARBOR_PYTHON -m unittest discover -s src/balrog/tests -v
 ```
 
-Runtime tests use Python 3.10 for upstream games and a separate Python 3.12 Harbor environment for the bridge and ATIF validation; see `tests/runtime/README.txt`. Those tests use fake model clients. On Docker Desktop for Windows, `auto_mounting=false` lets the pre-agent healthcheck enforce root-owned verifier output permissions, and Harbor retrieves logs after verification. Set `$env:PYTHONUTF8 = "1"` in PowerShell.
+Use the hash-locked Harbor interpreter described below for `HARBOR_PYTHON`. In PowerShell, set `$env:PYTHONPATH = "src/balrog/src"` and `$env:PYTHONUTF8 = "1"` first, then invoke that interpreter with `-m unittest discover -s src/balrog/tests -v`. Runtime tests use Python 3.10 for upstream games and a separate Python 3.12 Harbor environment for the bridge and ATIF validation; see `tests/runtime/README.txt`. Those tests use fake model clients. On Docker Desktop for Windows, `auto_mounting=false` lets the pre-agent healthcheck enforce root-owned verifier output permissions, and Harbor retrieves logs after verification.
 
 The saved pre-migration checks passed 53 unit tests with one Windows symlink-creation skip (54 total), plus 44 runtime tests across six groups. These include six Crafter failure-policy tests, eight suite-verification tests and the fake-client agent comparison. Wheel/sdist builds and six project-CLI generation checks also passed; those packaging checks do not rerun Docker gameplay. See the [submission checks](validation/submission_checks.json) for counts and the [validation index](validation/README.md) for the evidence scope. No paid model API was called.
 
 The 2026-11-21 PR update reran the current offline suite: **69 passed and one Windows symlink-permission skip** (70 total), including the separate-verifier and historical-evidence checks. The historical bundle integrity check also passed with `--check --historical`, explicitly reporting source drift. The structural validator still reports 29 passing checks, the empty-parity error and two disclosed warnings.
+
+The 2026-11-22 [no-key parity preparation](docs/parity_preparation.md) passed **100 tests with one Windows skip**, 24 launcher dry-runs, eight clean image builds and all 255 frozen initial-state checks. Ten fresh references on **Harbor 0.27.0** matched their scores and replays with zero exceptions: eight full scores plus the original Crafter `2/22` and NLE `0` diagnostics. A separate 64-left-turn BabyAI control scored 0; its correct reference scored 1. Docker and Daytona launch paths are implemented on both sides, but actual Daytona execution and real-model parity remain untested.
 
 ## Usage: Create Task Directories
 
@@ -171,7 +173,7 @@ uv run balrog --environments textworld --output-dir ../../datasets/balrog-textwo
 uv run balrog --environments babyai --split sanity --output-dir ../../datasets/balrog-babyai-sanity --benchmark-source ../../../BALROG --minigrid-source ../../../minigrid-source
 ```
 
-An interpreter containing Harbor 0.26.0 can prepare an unpublished `dataset.toml` from the adapters repository root:
+The pinned Harbor 0.27.0 interpreter can prepare an unpublished `dataset.toml` from the adapters repository root:
 
 ```bash
 HARBOR_PYTHON src/balrog/scripts/write_dataset_manifest.py --dataset datasets/balrog-six-games --environments all --name balrog/six-games
@@ -187,20 +189,27 @@ Replace `HARBOR_PYTHON` with that interpreter's executable path. The script chec
 |-------|-------|--------|------|--------------|-----------------------|---------------------|
 | Not run | Not confirmed | Native progression; equal environment weights overall | 0 | 0 | N/A | N/A |
 
-The six-environment [parity proposal](parity/proposal.md) and [machine-readable plan](parity/plan.proposed.json) remain **PROPOSED_NOT_APPROVED_NOT_RUN**. The primary comparison uses upstream `naive` on both sides with proposed model `gpt-4o-mini-2024-07-18` through 2077ai; that model's provider availability is unconfirmed. It proposes 10 fixed sanity tasks spanning all six environments, one complete run on each side, then two additional paired runs: `255 × 3 × 2 = 1,530` formal episodes plus `10 × 2 = 20` sanity episodes, totaling **1,550**. Task seeds are episodes within a run, not independent full benchmark runs. Exact settings, credentials, cost limits and the run plan still require confirmation. Daytona and its service isolation have not been validated; the tested platform is Docker Compose. The proposal records launcher and preflight work required before paid execution. The current 1,800-second launcher default is not an approved formal deadline, particularly for NLE's unchanged 100,000-action allowance; per-environment deadlines must be agreed from measured latency before formal runs.
+The six-environment [parity proposal](parity/proposal.md) and [machine-readable plan](parity/plan.proposed.json) remain **PROPOSED_NOT_APPROVED_NOT_RUN**. The primary comparison uses upstream `naive` on both sides with proposed model `gpt-4o-mini-2024-07-18` through 2077ai; that model's provider availability is unconfirmed. It proposes 10 fixed sanity tasks spanning all six environments, one complete run on each side, then two additional paired runs: `255 × 3 × 2 = 1,530` formal episodes plus `10 × 2 = 20` sanity episodes, totaling **1,550**. Task seeds are episodes within a run, not independent full benchmark runs. Exact settings, credentials, cost limits and the run plan still require confirmation. Daytona and its service isolation have not been tested remotely; completed reference evidence uses Docker Compose. The [offline preparation guide](docs/parity_preparation.md) covers explicit ten-task selection, launch configuration and dependency locks. Live launchers require an explicit per-environment timeout; 1,800 seconds is only a proposed diagnostic limit, particularly for NLE's unchanged 100,000-action allowance. Formal deadlines must be agreed from measured latency.
 
 For the additional standard-agent requirement, propose **Claude Code 2.1.322 + `claude-haiku-4-5-20251001`**: ten smoke tasks followed by all 58 seed-0 task families over three Harbor-only runs (**184 additional episodes**). This is separately reported subset generalization, not another matched parity experiment. The official release/model references and selection are in the proposal; 2077ai availability, Anthropic Messages/tool-use compatibility, effective CLI settings and budget remain unconfirmed. No standard-agent experiment has run. The two proposals total 1,734 scheduled episodes if both are approved, excluding retained failures or extra diagnostics.
 
 The shared public settings template is [`parity/settings.example.json`](parity/settings.example.json). Its exact model ID is a deliberate placeholder. The proposed settings are not approval to run them. Before live experiments, freeze the same supported agent, model ID, decoding parameters, provider endpoint and history settings on both sides. Set model-call limits per environment so they do not truncate native budgets; the original 128-call BabyAI example is insufficient for Crafter or NetHack. Provider credentials belong in the process environment or ignored `.env.local`, never public settings or artifacts.
 
-From the adapters repository root, these commands only inspect a planned BabyAI sanity selection; the other five environments use `--environment NAME`, their own generated dataset and environment directory:
+First install the hash-locked host harness with `uv venv --python 3.12 .venv-parity` and `uv pip sync --python .venv-parity/Scripts/python.exe --require-hashes src/balrog/parity/requirements-harbor.lock` on Windows (use `.venv-parity/bin/python` on Linux). Run the scripts with that interpreter, referred to below as `HARBOR_PYTHON`. The generator's dependency-free `uv` project alone does not install Harbor.
+
+From the adapters repository root, generate all ten tasks in six per-environment directories, then inspect a planned BabyAI launch:
 
 ```bash
-uv run --project src/balrog python src/balrog/scripts/run_native.py --environment babyai --environment-dir datasets/balrog-babyai/babyai-goto-seed-0/environment --settings src/balrog/parity/settings.example.json --output-dir parity-runs/babyai/native-sanity --split sanity --dry-run
-uv run --project src/balrog python src/balrog/scripts/run_harbor.py --environment babyai --dataset datasets/balrog-babyai-sanity --settings src/balrog/parity/settings.example.json --jobs-dir parity-runs/babyai/harbor --job-name sanity --split sanity --dry-run
+HARBOR_PYTHON src/balrog/scripts/prepare_parity.py --output-dir parity-runs/prepared-sanity --benchmark-source ../BALROG --minigrid-source ../minigrid-source --assets-dir ../benchmark-assets
+HARBOR_PYTHON src/balrog/scripts/run_native.py --environment babyai --environment-dir parity-runs/prepared-sanity/datasets/babyai/babyai-goto-seed-0/environment --settings src/balrog/parity/settings.proposed.json --selection-plan src/balrog/parity/plan.proposed.json --output-dir parity-runs/babyai/native-sanity --split sanity --dry-run
+HARBOR_PYTHON src/balrog/scripts/run_harbor.py --environment babyai --dataset parity-runs/prepared-sanity/datasets/babyai --settings src/balrog/parity/settings.proposed.json --selection-plan src/balrog/parity/plan.proposed.json --jobs-dir parity-runs/babyai/harbor --job-name sanity --split sanity --dry-run
 ```
 
-`--dry-run` neither builds containers nor calls a model. After an agreed plan and credentials are available, use the confirmed settings file, remove `--dry-run`, and give the Harbor launcher `--harbor-python HARBOR_PYTHON`. Run the same sanity selection on both sides before full runs. Use fresh output/job names; failures and previous attempts must remain visible. The launchers preserve native budgets, reject reused output locations and require exact dataset coverage.
+`HARBOR_PYTHON` denotes an executable path, not a literal command. Replace `../benchmark-assets` with the directory containing the verified source archives. Both dry-runs validate the selection and settings without reading credentials, building containers, creating run directories or calling a model. With `--selection-plan`, sanity means the exact proposed ten cases globally (two BabyAI cases above); without it, the legacy sanity split remains all 58 seed-0 families. A per-environment JSON list is also supported through `--task-ids-file`.
+
+Both launchers accept `--environment-type docker|daytona` (default Docker). For Daytona, the host lock includes its SDK; provide `DAYTONA_API_KEY` in the launching process environment when real execution is approved. The native path stages the same game image, code and inputs, runs the original evaluator, verifies the runtime before inference and collects artifacts before cleanup even on failure. Its cloud lifecycle is tested with fake providers; remote execution remains untested.
+
+After confirmation and platform preflight, use the agreed settings and explicit `--episode-timeout SECONDS`, then remove `--dry-run`. The Harbor interpreter must match the one used for validation. Both sides apply the same per-episode execution deadline; Harbor allows an additional 120 seconds for artifact collection. Run the same sanity selection on both sides before full runs. Use fresh output/job names; failures and previous attempts must remain visible. The launchers preserve native budgets, reject reused output locations and require exact dataset coverage. A configuration preview does not establish a matched Daytona experiment.
 
 Retain complete job directories, including original submissions/action records, model and agent logs, trusted game result artifacts, grading results and artifact manifests, together with the generated tasks and source/runtime provenance. For future parity uploads, include these in the Hugging Face experiment fork after removing credentials. The separate verifier can regrade collected game evidence without rerunning the agent; old logs alone do not establish that the required evidence is available. See [artifact retention and regrading](docs/separate_verifier.md#artifact-retention-and-regrading).
 
@@ -222,7 +231,7 @@ These scripts produce local analysis artifacts, not formal approval. An original
 - Crafter seeds are fixed at construction because its inherited `gym.seed()` does not reseed the world generator. Native and Harbor runs use identical constructor kwargs. However, the upstream world's sets contain objects hashed by identity, so identical random choices can select different creatures when set order differs. Long native-only replays have reproduced this divergence. The adapter does not sort or patch those sets. Crafter's explicitly disclosed authoritative-state scoring path needs maintainer review; its short reference replay successes do not prove determinism. See [`docs/crafter_scoring_review.md`](docs/crafter_scoring_review.md).
 - MiniHack retains original Boxoban level assets, the 100-action budget and reward-based progression. Global RNGs are seeded after environment construction and immediately before reset, matching the upstream evaluator. Correcting that order changed all ten frozen Boxoban instances; their earlier oracle results are superseded by the corrected 39-oracle/one-diagnostic validation. For Hard Boxoban seed 0, exhaustive search found no solution within 100 moves and an exact minimum of 104 in the stated static Sokoban model. The unchanged native environment truncates its first 100 actions at progression 0. This is not a successful 104-step native episode. The task remains selected without a replacement seed or extended budget; its full-oracle requirement needs maintainer handling. See [`docs/minihack_seed_and_budget_review.md`](docs/minihack_seed_and_budget_review.md).
 - The shared SDK lock aligns model clients on both sides. The pinned upstream OpenAI wrapper does not forward its `client.timeout` setting to the SDK; documented process/Harbor timeouts provide outer limits. No one-sided client patch changes native behavior.
-- Game dependency reproducibility still needs work: source revisions and selected direct packages are pinned, but not every game's transitive dependency resolution is fully locked. Saved runtime versions describe the local runs; complete per-game locks and clean-build checks remain required before formal parity.
+- All six games have complete Python dependency versions and artifact hashes, Debian package versions from a dated snapshot, pinned source archives and a digest-pinned base image. Installation disables dependency resolution and isolated build dependency fetching; the runtime guard rejects package or OS drift. These locks target CPython 3.10 on Linux x86_64. Source builds are version-locked, not claimed to produce byte-identical wheels. See the [preparation report](docs/parity_preparation.md) for clean-build evidence and the disclosed Baba Is AI metadata correction.
 - Only the game service receives the local result token. Its collect hook uses that token to export finalized evidence, which Harbor transfers to the dedicated verifier; model agents cannot write the game artifact or access the verifier's reward directory. Source preparation and container builds require network access for pinned public inputs; reference and offline tests need no model credentials. This is not evidence of isolation on an untested platform.
 - The original one-episode BabyAI fixtures and `scripts/check_smoke.py` remain for historical reproduction. Multi-environment reference checks use `check_suite_reference.py`; the BabyAI full-oracle checker remains available for its 50-case scope.
 - Empty parity results, incomplete oracle coverage, unresolved exception handling, untested Daytona execution and unpublished artifacts prevent a Ready for Review claim. The submission validator rejects the intentionally empty parity array; this is an outstanding requirement, not a passing acceptance check. A Draft/WIP PR requests feedback and does not waive those requirements.
@@ -230,15 +239,18 @@ These scripts produce local analysis artifacts, not formal approval. An original
 
 ## Installation / Prerequisites
 
-Install Git, [uv](https://docs.astral.sh/uv/), Docker with Linux containers and Compose, and Harbor 0.26.0. The generator requires Python 3.12+; game and model-agent runtimes use pinned Python 3.10 Linux images. From the parent workspace:
+Install Git, [uv](https://docs.astral.sh/uv/), Docker with Linux containers and Compose, and the hash-locked Harbor 0.27.0 host harness described above. The generator requires Python 3.12+; game and model-agent runtimes use pinned Python 3.10 Linux x86_64 images. Historical 255-task results retain their Harbor 0.26.0 provenance. From the parent workspace:
 
 ```bash
 git clone https://github.com/balrog-ai/BALROG.git BALROG
 git -C BALROG checkout b7afe79e3e4265811cfa985ed7c95c4d1a11e3f5
 git clone https://github.com/BartekCupial/Minigrid.git minigrid-source
 git -C minigrid-source checkout cf73dd148e51276bd675a37e3bfb0bf2b42329b2
-uv tool install harbor==0.26.0
-cd harbor-index-adapters/src/balrog
+cd harbor-index-adapters
+uv venv --python 3.12 .venv-parity
+# Linux path below; use .venv-parity/Scripts/python.exe on Windows.
+uv pip sync --python .venv-parity/bin/python --require-hashes src/balrog/parity/requirements-harbor.lock
+cd src/balrog
 uv sync
 ```
 

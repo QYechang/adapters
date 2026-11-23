@@ -275,6 +275,8 @@ class BALROGAdapter:
                         for placeholder, value in replacements.items():
                             content = content.replace(placeholder, value)
                         path.write_text(content, encoding="utf-8", newline="\n")
+                from .runtime_locks import stage_runtime_lock
+                stage_runtime_lock(PACKAGE_DIR, "babyai", staged / "environment")
                 (staged / "environment" / "vendor").mkdir(parents=True, exist_ok=True)
                 _write_json(staged / "environment" / "episode.json", episode)
                 _write_json(staged / "tests" / "task_config.json", episode)

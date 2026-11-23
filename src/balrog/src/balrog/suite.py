@@ -11,6 +11,7 @@ import tempfile
 
 from .adapter import (BALROG_COMMIT, PACKAGE_DIR, _check_plain_tree, _is_link,
                       _source_archive, _write_json, load_manifest)
+from .runtime_locks import stage_runtime_lock
 
 ENVIRONMENTS = ("babyai", "babaisai", "textworld", "crafter", "nle", "minihack")
 COUNTS = {"babyai": 50, "babaisai": 120, "textworld": 30, "crafter": 10, "nle": 5, "minihack": 40}
@@ -159,8 +160,6 @@ def generate_suite(adapter):
                     path.write_text(content, encoding="utf-8", newline="\n")
             if env_name != "babyai":
                 shutil.copyfile(PACKAGE_DIR / "runtime-dockerfiles" / f"{env_name}.Dockerfile", staged / "environment/Dockerfile.game")
-                if env_name == "textworld":
-                    shutil.copyfile(PACKAGE_DIR / "fixtures/textworld_requirements.lock", staged / "environment/requirements-game.lock")
                 (staged / "instruction.md").write_text(instruction(env_name), encoding="utf-8", newline="\n")
                 (staged / "solution/replay_oracle.py").write_text(REFERENCE_SCRIPT, encoding="utf-8", newline="\n")
                 config = (staged / "task.toml").read_text(encoding="utf-8")
@@ -171,6 +170,7 @@ def generate_suite(adapter):
                 config = config.replace("build_timeout_sec = 900.0", "build_timeout_sec = 1800.0")
                 config = config.replace("memory_mb = 1024", "memory_mb = 2048").replace("storage_mb = 2048", "storage_mb = 4096")
                 (staged / "task.toml").write_text(config, encoding="utf-8", newline="\n")
+            stage_runtime_lock(PACKAGE_DIR, env_name, staged / "environment")
             vendor = staged / "environment/vendor"
             vendor.mkdir()
             selected = ["balrog.tar.gz"] + (["minigrid.tar.gz"] if env_name == "babyai" else [r["archive"] for r in source_lock[env_name]])

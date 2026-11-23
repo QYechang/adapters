@@ -1,6 +1,6 @@
 {
   "status": "PROPOSED_NOT_APPROVED_NOT_RUN",
-  "prepared_on": "2026-11-21",
+  "prepared_on": "2026-11-22",
   "purpose": "Proposed matched text-only evaluation of the pinned upstream BALROG naive agent on 255 fixed cases across all six environments. No real-model parity has run; this document is not permission to spend.",
   "coordination": {
     "contact": "Xiangning Lin (@rosierosie_77359), Discord",
@@ -10,7 +10,7 @@
       "Written agreement on the exact experiment revision, original-scope/oracle treatment, model snapshots, agent revisions, effective native/CLI settings and finite staged cost/token/runtime limits; formal per-environment deadlines must be populated before full runs.",
       "Resolve or explicitly accept the remaining NLE/MiniHack reference limitations, the Crafter privileged-reference proposal and the existing Crafter replay/scoring exception before claiming the oracle gate is met.",
       "Provision 2077ai and Daytona credentials privately; confirm exact dated model availability, account permissions and request/token quotas. Provisioning is not spending authorization.",
-      "Finish explicit primary sanity task-ID selection, validate launchers against the chosen Harbor revision, complete game dependency locks/clean builds, and freeze adapter/runtime/image/settings/manifests. Prepare and independently validate the separate pinned CLI configuration; no runnable CLI experiment is claimed yet.",
+      "Review the completed explicit ten-task selector, launch configuration, dependency locks and local validation, then freeze adapter/runtime/image/settings/manifests. Prepare and independently validate the separate pinned CLI configuration after model/protocol confirmation; no runnable CLI experiment is claimed yet.",
       "Validate the original game sidecar, collect hook and separate verifier on the approved platform; current evidence is local Docker, not Daytona.",
       "Approve paired sanity spending first. Estimate subsequent usage from retained sanity accounting and approve each scale-up before launching it."
     ],
@@ -405,14 +405,14 @@
       "minihack-mazewalk-9x9-v0-seed-0",
       "minihack-quest-easy-v0-seed-0"
     ],
-    "sanity_previous_split": "The existing --split sanity selects all 58 seed-0 task types. It is not the proposed initial paid stage; keep it available for offline checks. Explicit selection support is required before the ten-task stage."
+    "sanity_previous_split": "Without --selection-plan or --task-ids-file, --split sanity retains all 58 seed-0 task families. Both launchers now support --selection-plan to select the exact proposed ten cases; prepare_parity.py generates the six per-environment datasets and validates both Docker and Daytona Harbor previews without credentials."
   },
   "primary_experiment": {
     "original_agent": "upstream BALROG naive",
     "harbor_agent": "balrog-native bridge reusing the same pinned upstream naive implementation",
     "balrog_commit": "b7afe79e3e4265811cfa985ed7c95c4d1a11e3f5",
     "minigrid_commit": "cf73dd148e51276bd675a37e3bfb0bf2b42329b2",
-    "harbor_version": "0.26.0",
+    "harbor_version": "0.27.0",
     "provider": "2077ai",
     "api_base_url": "https://app.ppapi.ai/v1",
     "api": "OpenAI-compatible Chat Completions",
@@ -446,7 +446,7 @@
       "delay_seconds": 2,
       "alternate_roles": false
     },
-    "timeout_caveat": "The upstream client timeout=60 is not forwarded to the SDK. The current launchers default to a 1,800-second outer deadline; this is a proposed bounded diagnostic limit only, not an agreed formal-run deadline. Pin identical SDK and effective request behavior on both sides.",
+    "timeout_caveat": "The upstream client timeout=60 is not forwarded to the SDK. Live launchers now require an explicit positive per-environment execution timeout. The proposed 1,800 seconds is only a bounded diagnostic limit, not an agreed formal deadline. Both sides use the same execution deadline T; Harbor's outer agent deadline is T+120 seconds for artifact collection. Pin identical SDK and effective request behavior on both sides.",
     "equivalence": [
       "Same prompts, observations, action parsing, invalid-action handling and native scoring",
       "Same model settings, source snapshots, runtime dependencies and limits",
@@ -456,19 +456,25 @@
     "nle_native_no_progress_timeout": 150,
     "outer_timeout_policy": "Measure per-environment latency, actual calls and retries during the approved diagnostic sanity stage, then agree and freeze sufficiently provisioned formal deadlines on both sides before the first full pair. Early native termination is valid; outer timeout or cost-cap interruption is an incomplete infrastructure outcome, never score zero or native completion. Do not silently shorten native action limits. If the unchanged scope is infeasible, obtain agreement for a separately versioned symmetric scope/budget revision and rerun its validation before paid formal execution.",
     "settings_file_sha256": "36bb815fab38937f98dae4b1608216d747bdc275a4b3cfb8a4ba41e50a517b27",
-    "harbor_revision_policy": "0.26.0 is the version used for completed local separate-verifier reference validation. Recheck upstream before paid runs, agree and freeze the actual release/commit, and repeat preflight after a version change.",
+    "harbor_revision_policy": "0.27.0 is the host-harness candidate pinned by parity/requirements-harbor.lock for current offline preparation; the completed historical 255-task reference run used 0.26.0. Agree the final harness pin before paid runs and repeat preflight after any version change. Local preparation does not establish Daytona runtime compatibility.",
     "adapter_revision_policy": "Freeze the reviewed PR commit plus generated task, runner and image digests before each experiment revision; the current proposal does not certify an uncommitted checkout as a final execution pin.",
     "implementation_status": {
-      "native": "Implemented via the original Evaluator.run_episode with transparent recorders.",
+      "native": "Implemented via the original Evaluator.run_episode with transparent recorders. Docker and Daytona launch paths are implemented; the Daytona lifecycle has only local fake-provider validation, not a cloud run.",
       "harbor": "Implemented as balrog.agent:BalrogNativeAgent using the same pinned upstream naive agent through public HTTP observations/actions.",
       "real_model_validation": "Not run; offline fake-client and reference validation are separate evidence.",
       "preflight_gaps": [
-        "Both public launchers currently select the entire seed-0 sanity split; add audited explicit task-ID selection without changing fixtures or task budgets.",
-        "Validate/update scripts/run_harbor.py for the agreed Harbor JobConfig, including top-level n_concurrent_trials instead of relying on the old orchestrator object.",
-        "Record and compare actual prompts, effective settings, launch configuration and request behavior on both sides before scaling.",
-        "Complete per-game transitive dependency locks and clean-build checks; saved runtime versions alone do not freeze dependency resolution.",
-        "Implement and validate explicitly approved diagnostic and formal per-environment deadlines; a null formal deadline in this proposal is a launch blocker, not unlimited runtime."
-      ]
+        "Confirm model/protocol availability and compare actual prompts, effective settings and request behavior during approved paired sanity before scaling.",
+        "Validate both implemented execution paths on Daytona with the supplied credentials. Local schemas, provider source interfaces and fake lifecycle tests pass, but remote builds, exact runtime inventories, permissions, service isolation, protected collection, verifier execution and deletion still need a real preflight. If the platform changes the locked runtime, diagnose or agree a matched alternative; do not weaken the drift guard.",
+        "Agree explicit diagnostic and formal per-environment deadlines and finite stage resource limits; null formal deadlines remain a launch blocker, not unlimited runtime.",
+        "Freeze the final reviewed commit, generated task snapshots and built image digests; retain the local clean-build/reference evidence separately from historical 0.26 results."
+      ],
+      "offline_preparation": {
+        "selection": "Implemented: exact ten tasks across six unchanged manifests; duplicate, unknown, wrong-environment and drifted-plan rejection.",
+        "host_configuration": "Implemented and locally tested: hash-locked Harbor[daytona] 0.27.0, explicit ten-task selection, Docker/Daytona launch paths for both sides, top-level Harbor concurrency, retry=0, correct CLI entry and explicit live deadlines. Remote execution is untested.",
+        "dependencies": "Six complete Python artifact/hash locks, exact Debian snapshot versions and drift guards; all eight runtime images built without cache, all 255 frozen initial states matched and representative reference/replay checks passed. See docs/parity_preparation.md for the separate validation scopes.",
+        "model_calls": 0,
+        "approval": false
+      }
     },
     "nle_native_no_progress_timeout_meaning": "150 native calls without a game-clock advance; not 150 elapsed game turns and not a reward-progress timeout.",
     "diagnostic_outer_episode_timeout_seconds": 1800,
@@ -489,7 +495,7 @@
   },
   "execution": {
     "formal_platform_proposed": "Daytona on both sides, as requested by the team, after validating identical pinned assets, game-sidecar isolation, collection and separate verification.",
-    "current_platform": "Local Linux Docker containers with Docker Compose; Daytona not yet validated.",
+    "current_platform": "Completed game evidence uses local Linux Docker/Compose. Both original-side and Harbor-side launchers now support Docker/Daytona configuration. The original side runs the same native evaluator in a derived single-game image; Harbor uses its game sidecar and separate verifier. Daytona SDK/schema/source/fake-provider checks are local preparation only; no remote sandbox or model experiment has run.",
     "preflight": "Verify all 255 original references and representative wrong-action controls on the selected platform; preserve partial scores and secure artifact transfer. The existing 239 full-score plus 16 diagnostic baseline does not by itself satisfy the guide's 100% oracle gate.",
     "fallback": "If the required sidecar/collect/separate-verifier topology cannot be supported on Daytona, document the blocker and obtain maintainer approval for an alternative. Local Docker evidence is not Daytona validation; do not mix platforms within a comparison.",
     "initial_concurrency": 1,
@@ -549,7 +555,7 @@
     "official_release_url": "https://github.com/anthropics/claude-code/releases/tag/v2.1.322",
     "official_model_status_url": "https://platform.claude.com/docs/en/about-claude/model-deprecations",
     "official_model_status_as_reviewed": "Active on 2026-11-21; recheck before execution.",
-    "interface": "Existing public balrog-task command and generated task instructions; no private oracle snapshots or game filesystem access. Confirm whether this interface suffices or a separate compatibility dataset is required.",
+    "interface": "Existing public balrog observe and balrog act commands and generated task instructions; no private oracle snapshots or game filesystem access. Confirm whether this interface suffices or a separate compatibility dataset is required.",
     "implementation_boundary": "Harbor supplies the standard agent, but this specific pinned agent/model/gateway configuration has not been configured or tested. This proposal is not a runnable launch configuration.",
     "platform": "Approved Daytona topology; validate game sidecar, protected result collection and separate verifier before paid execution.",
     "smoke": {
@@ -737,7 +743,8 @@
     "reference_validation": "Harbor 0.26.0 separate-verifier run completed all 255 original references: 239 full-score oracles, 16 diagnostics, zero exceptions, 255 exact fresh replays, original scores unchanged. See docs/separate_verifier_full_validation.md; not model parity.",
     "offline_integration": "Scripted fake HTTP/API tests only; excluded from formal analysis.",
     "crafter_v45": "Separately evaluated privileged reference-controller proposal; see docs/crafter_v45_validation.md. Maintainer acceptance and promotion remain pending. It does not change this plan's original manifest hashes, baseline oracle counts or model inputs; native object-order replay limitations still apply.",
-    "model_runs_authorized": false
+    "model_runs_authorized": false,
+    "offline_preparation": "See docs/parity_preparation.md for the exact ten-task selection, pinned host/runtime dependencies, no-key launcher validation and separately recorded local checks. This preparation is not model parity or experiment approval."
   },
   "references": [
     "../docs/separate_verifier_full_validation.md",
